@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='UTF-8'>
+    <title>Test task</title>
+</head>
+<body>
+
+<h1>open console</h1>
+
+<script type='text/javascript'>
+    // helpers begin
+    function getIsString(mayBeString) {
+        return typeof mayBeString === 'string';
+    }
+
+    function getIsTagName(mayBeTagName) {
+        return Boolean(getIsString(mayBeTagName) && mayBeTagName.trim());
+    }
+
+    function createNodeFromTagName(mayBeTagName) {
+        const defaultTagName = 'div';
+        const tagName = getIsTagName(mayBeTagName) ? mayBeTagName : defaultTagName;
+
+        return document.createElement(tagName);
+    }
+    // helpers end
+
+    // a-la constructor
+    function renderer(mayBeTagName) {
+        // private property
+        let node = createNodeFromTagName(mayBeTagName);
+
+        function MyJQueryNode(mayBeInnerText) {
+            if (getIsString(mayBeInnerText)) {
+                node.innerHTML = mayBeInnerText;
+            }
+
+            return node.outerHTML;
+        }
+
+        // public methods begin
+        MyJQueryNode.element = function (mayBeNewTagName) {
+            if (mayBeNewTagName) {
+                node = createNodeFromTagName(mayBeNewTagName);
+                return MyJQueryNode;
+            }
+
+            return node.tagName.toLowerCase();
+        }
+
+        MyJQueryNode.attr = function (key, value) {
+            const argumentCount = arguments.length;
+
+            switch (argumentCount) {
+                case 1:
+                    return node.getAttribute(key);
+                case 2:
+                    node.setAttribute(key, value);
+                    break;
+                default:
+                    console.error('You shall not pass, unit pass one or two arguments!');
+
+            }
+
+            return MyJQueryNode;
+        }
+        // public methods end
+
+        return MyJQueryNode;
+    }
+
+    // Level 1
+    console.log('Level 1');
+    var div = renderer();
+    console.log('div', div.element());
+    console.assert('div' === div.element());
+    console.log('<div></div>', div());
+    console.assert('<div></div>' === div());
+
+    // Level 2
+    console.log('Level 2');
+    const p = renderer();
+    p.element('p');
+    console.log('p', p.element());
+    console.assert('p' === p.element());
+    console.log('<p></p>', p());
+    console.assert('<p></p>' === p());
+
+    // Level 3
+    console.log('Level 3');
+    console.log('<p>Text</p>', p('Text'));
+    console.assert('<p>Text</p>' === p('Text'));
+
+    // Level 4
+    console.log('Level 4');
+    console.log('<p>Another text</p>', renderer().element('p')('Another text'));
+    console.assert('<p>Another text</p>' === renderer().element('p')('Another text'));
+
+    // Level 5, optional
+    console.log('Level 5, optional');
+    const body = renderer()
+        .element('body')
+        .attr('style', 'background: red')
+        .attr('class', 'body');
+
+    console.log('background: red', body.attr('style'));
+    console.assert('background: red' === body.attr('style'));
+    console.log('<body style="background: red" class="body"><p>Text</p></body>', body(p('Text')));
+    console.assert('<body style="background: red" class="body"><p>Text</p></body>' === body(p('Text')));
+</script>
+
+</body>
+</html>
